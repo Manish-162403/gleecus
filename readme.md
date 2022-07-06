@@ -3,3 +3,5 @@
 # The API endpoints could be using GET and must support pagination.
 # As there are no POST endpoints, have the necessary data pre-populated into the DB. 
 # The GET endpoints are supposed to be protected. Implement OAuth2 and OIDC for the client to access these protected endpoints.
+
+#  6a94eb52b8fbdfc04a071a784bb709c5ed7b6b56 
