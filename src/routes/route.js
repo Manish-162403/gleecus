@@ -1,15 +1,72 @@
 const express = require('express');
 const router = express.Router();
 const gleecus = require('../model/gleecus')
-// const axios = require("axios");
-// var cors = require("cors");
+const jwt = require('jsonwebtoken')
 
-// const CLIENT_ID = "e4fc4c549d7eff22f23b";
-// const CLIENT_SECRET = "6a94eb52b8fbdfc04a071a784bb709c5ed7b6b56";
-// const GITHUB_URL = "https://github.com/login/oauth/access_token";
+   const isValid = function (value) {
+    if (typeof value == 'undefined' || value === null) return false
+    if (typeof value == 'string' && value.trim().length === 0) return false
+    return true
+}
 
+router.post( "/logIn" , async (req, res) => {
+    try {
+        let body = req.body
+        if (!body)
+            return res.status(400).send({ status: false, msg: "invalid request parameter, please provide login details" })
 
-router.get('/allpost', async (req, res) => {  
+        const { email, password } = body
+
+        if (isValid(email))
+        if (!(/^\w+([\.-]?\w+)@\w+([\.-]?\w+)(\.\w{2,3})+$/.test(email)))
+            return res.status(400).send({ status: false, msg: "email is not a valid " })
+
+        if (!isValid(email))
+            return res.status(400).send({ status: false, msg: "please enter email" })
+
+        if (!isValid(password))
+            return res.status(400).send({ status: false, msg: "please enter password" })
+
+        var token = jwt.sign({
+
+            email: email,
+
+        }, "gleecus")//secret key
+       
+        res.setHeader("authorization", token) // look ion the postman body header
+
+        return res.status(200).send({ status: true, msg: "user loing successfully", data: token })
+    }
+    catch (err) {
+        return res.status(500).send({ status: false, msg: err.message })
+    }
+
+})
+////////////////////////////////////////////////////////////////////////////////
+
+const authentication = function (req, res, next) {
+    try {
+        const token = req.headers["authorization"]
+        if (!token) {
+            return res.status(400).send({ status: false, message: "token must be present" });
+        }
+        const bearer=token.split(' ')
+        const bearerToken=bearer[1]
+        const decodedToken = jwt.verify(bearerToken, "gleecus");
+
+        if (!decodedToken) {
+            return res.status(400).send({ status: false, message: "token is invalid" });
+        }
+        next();
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).send({ msg: err.message })
+    }
+
+}
+/////////////////////////////////////////////////////////////////
+router.get('/allpost',authentication, async (req, res) => {  
     try{
         let page = req.query.page ?? 1;
         let limit = 4;
@@ -19,22 +76,6 @@ router.get('/allpost', async (req, res) => {
         res.status(500).send({message:error})
     }
 })
-
-// app.get("/oauth/redirect", (req, res) => {
-//     axios({
-//       method: "POST",
-//       url: `${GITHUB_URL}?client_id=${CLIENT_ID}&client_secret=${CLIENT_SECRET}&code=${req.query.code}`,
-//       headers: {
-//         Accept: "application/json",
-//       },
-//     }).then((response) => {
-//       res.redirect(
-//         `http://localhost:3000?access_token=${response.data.access_token}`
-//       );
-//     });
-//   });
-  
-
 
 
 module.exports= router;
