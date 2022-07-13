@@ -6,6 +6,7 @@ router.get('/', ensureGuest ,(req, res) => {
   })
 
 router.get("/log",ensureAuth, async(req,res)=>{
-    res.render('index',{userinfo:req.user})
+   
+    res.sendFile('./data.js', {root: __dirname})
 })
 module.exports=router;
